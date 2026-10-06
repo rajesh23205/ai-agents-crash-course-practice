@@ -2,8 +2,11 @@ import asyncio
 import os
 
 import dotenv
-from agents import Agent, ModelSettings, Runner, trace
+
+# from agents import Agent, ModelSettings, Runner, trace
+from agents import Agent, Runner, trace
 from openai import OpenAI
+from python_version import get_python_version
 
 from calculator import calculator
 
@@ -35,8 +38,8 @@ python_tutor_agent = Agent(
     You are a python expert, provide tution and clear all the doubts of python the coading language.
     You give concise answer
     """,
-    tools=[calculator],
-    model_settings=ModelSettings(tool_choice="calculator"),
+    tools=[calculator, get_python_version],
+    # model_settings=ModelSettings(tool_choice="calculator"),
 )
 
 
@@ -45,7 +48,8 @@ async def main():
     with trace("Python experience tutor"):
         result = await Runner.run(
             python_tutor_agent,
-            "What is 25 multiplied by 48? Explain the calculation in one simple sentence.",
+            # "What is 25 multiplied by 48? use required function.",
+            "What Python version am I using? use required function.",
         )
 
     print(result.final_output)
