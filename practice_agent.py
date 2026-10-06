@@ -2,7 +2,7 @@ import asyncio
 import os
 
 import dotenv
-from agents import Agent, Runner, trace
+from agents import Agent, ModelSettings, Runner, trace
 from openai import OpenAI
 
 from calculator import calculator
@@ -36,6 +36,7 @@ python_tutor_agent = Agent(
     You give concise answer
     """,
     tools=[calculator],
+    model_settings=ModelSettings(tool_choice="calculator"),
 )
 
 
@@ -44,7 +45,7 @@ async def main():
     with trace("Python experience tutor"):
         result = await Runner.run(
             python_tutor_agent,
-            "Use the calculator tool to calculate, What is 25 multiplied by 48?",
+            "What is 25 multiplied by 48? Explain the calculation in one simple sentence.",
         )
 
     print(result.final_output)
