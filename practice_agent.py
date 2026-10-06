@@ -6,7 +6,6 @@ import dotenv
 # from agents import Agent, ModelSettings, Runner, trace
 from agents import Agent, RunContextWrapper, Runner, trace
 from openai import OpenAI
-from session_agent import session
 
 from calculator import calculator
 from python_version import get_python_version
@@ -66,42 +65,55 @@ python_tutor_agent = Agent(
     # model_settings=ModelSettings(tool_choice="calculator"),
 )
 
-session_agent = Agent(
-    name="Session Tutor",
-    instructions="You are a helpful Python tutor. Keep your answers concise.",
+# Ceate a Math agent
+math_agent = Agent(
+    name="Math Tutor",
+    instructions="""
+    You are a math expert.
+    Solve mathematical questions clearly and concisely.
+    """,
+)
+
+triage_agent = Agent(
+    name="Triage Agent",
+    instructions="""
+    You are a routing agent.
+    If the user asks a Python question, hand it to the Python Tutor.
+    If the user asks a math question, hand it to the Math Tutor.
+    """,
+    handoffs=[python_tutor_agent, math_agent],
 )
 
 
 # Execute the agent
 async def main():
-    with trace("Python experience tutor"):
+    # with trace("Python experience tutor"):
+    #     result = await Runner.run(
+    #         python_tutor_agent,
+    #         # "What is 25 multiplied by 48? use required function.",
+    #         "What Python version am I using? use required function. Include my name as well in the response",
+    #         # session=session,
+    #         context=student_2,
+    #     )
+
+    # print(result.final_output)
+
+    with trace("Agent trigger execution"):
         result = await Runner.run(
-            python_tutor_agent,
-            # "What is 25 multiplied by 48? use required function.",
-            "What Python version am I using? use required function. Include my name as well in the response",
-            # session=session,
-            context=student_2,
+            triage_agent,
+            "What is the area of a circle with a radius of 5 cm?",
         )
 
     print(result.final_output)
 
-    with trace("Session introduction"):
-        session_result_1 = await Runner.run(
-            session_agent,
-            "My Name is Rajesh Roshan",
-            session=session,
+    with trace("Agent trigger execution"):
+        result = await Runner.run(
+            triage_agent,
+            "What is the difference between a Python list and a tuple?",
+            context=student_2,
         )
 
-    print(session_result_1.final_output)
-
-    with trace("Session introduction"):
-        session_result_2 = await Runner.run(
-            session_agent,
-            "What is my name",
-            session=session,
-        )
-
-    print(session_result_2.final_output)
+    print(result.final_output)
 
 
 if __name__ == "__main__":
