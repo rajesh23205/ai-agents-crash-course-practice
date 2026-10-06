@@ -6,10 +6,11 @@ import dotenv
 # from agents import Agent, ModelSettings, Runner, trace
 from agents import Agent, RunContextWrapper, Runner, trace
 from openai import OpenAI
-from user_context import Student
+from session_agent import session
 
 from calculator import calculator
 from python_version import get_python_version
+from user_context import Student
 
 dotenv.load_dotenv()
 
@@ -65,6 +66,11 @@ python_tutor_agent = Agent(
     # model_settings=ModelSettings(tool_choice="calculator"),
 )
 
+session_agent = Agent(
+    name="Session Tutor",
+    instructions="You are a helpful Python tutor. Keep your answers concise.",
+)
+
 
 # Execute the agent
 async def main():
@@ -73,10 +79,29 @@ async def main():
             python_tutor_agent,
             # "What is 25 multiplied by 48? use required function.",
             "What Python version am I using? use required function. Include my name as well in the response",
+            # session=session,
             context=student_2,
         )
 
     print(result.final_output)
+
+    with trace("Session introduction"):
+        session_result_1 = await Runner.run(
+            session_agent,
+            "My Name is Rajesh Roshan",
+            session=session,
+        )
+
+    print(session_result_1.final_output)
+
+    with trace("Session introduction"):
+        session_result_2 = await Runner.run(
+            session_agent,
+            "What is my name",
+            session=session,
+        )
+
+    print(session_result_2.final_output)
 
 
 if __name__ == "__main__":
