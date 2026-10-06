@@ -5,6 +5,8 @@ import dotenv
 from agents import Agent, Runner, trace
 from openai import OpenAI
 
+from calculator import calculator
+
 dotenv.load_dotenv()
 
 if not os.environ.get("OPENAI_API_KEY"):
@@ -33,6 +35,7 @@ python_tutor_agent = Agent(
     You are a python expert, provide tution and clear all the doubts of python the coading language.
     You give concise answer
     """,
+    tools=[calculator],
 )
 
 
@@ -40,7 +43,8 @@ python_tutor_agent = Agent(
 async def main():
     with trace("Python experience tutor"):
         result = await Runner.run(
-            python_tutor_agent, "Provide me some detauls of python"
+            python_tutor_agent,
+            "Use the calculator tool to calculate, What is 25 multiplied by 48?",
         )
 
     print(result.final_output)
