@@ -9,6 +9,7 @@ from openai import OpenAI
 
 from calculator import calculator
 from python_version import get_python_version
+from structured_output import MathAnswer
 from user_context import Student
 
 dotenv.load_dotenv()
@@ -72,6 +73,7 @@ math_agent = Agent(
     You are a math expert.
     Solve mathematical questions clearly and concisely.
     """,
+    output_type=MathAnswer,
 )
 
 triage_agent = Agent(
@@ -87,16 +89,6 @@ triage_agent = Agent(
 
 # Execute the agent
 async def main():
-    # with trace("Python experience tutor"):
-    #     result = await Runner.run(
-    #         python_tutor_agent,
-    #         # "What is 25 multiplied by 48? use required function.",
-    #         "What Python version am I using? use required function. Include my name as well in the response",
-    #         # session=session,
-    #         context=student_2,
-    #     )
-
-    # print(result.final_output)
 
     with trace("Agent trigger execution"):
         result = await Runner.run(
@@ -104,7 +96,9 @@ async def main():
             "What is the area of a circle with a radius of 5 cm?",
         )
 
-    print(result.final_output)
+    print(result.final_output.answer)
+    print(result.final_output.unit)
+    print(result.final_output.formula)
 
     with trace("Agent trigger execution"):
         result = await Runner.run(
