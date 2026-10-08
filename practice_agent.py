@@ -4,11 +4,10 @@ import os
 import dotenv
 
 # from agents import Agent, ModelSettings, Runner, trace
-from agents import Agent, RunContextWrapper, Runner, trace
+from agents import Agent, ModelSettings, RunContextWrapper, Runner, trace
 from openai import OpenAI
 
-from calculator import calculator
-from python_version import get_python_version
+from knowledge_reader import read_knowledge
 from structured_output import MathAnswer
 from user_context import Student
 
@@ -62,8 +61,8 @@ def python_tutor_instructions(context: RunContextWrapper[Student], agent: Agent)
 python_tutor_agent = Agent(
     name="Python Tutor",
     instructions=python_tutor_instructions,
-    tools=[calculator, get_python_version],
-    # model_settings=ModelSettings(tool_choice="calculator"),
+    tools=[read_knowledge],
+    model_settings=ModelSettings(tool_choice="required"),
 )
 
 # Ceate a Math agent
@@ -90,21 +89,30 @@ triage_agent = Agent(
 # Execute the agent
 async def main():
 
+    # with trace("Agent trigger execution"):
+    #     result = await Runner.run(
+    #         triage_agent,
+    #         "What is the area of a circle with a radius of 5 cm?",
+    #     )
+
+    # print(result.final_output.answer)
+    # print(result.final_output.unit)
+    # print(result.final_output.formula)
+
+    # with trace("Agent trigger execution"):
+    #     result = await Runner.run(
+    #         triage_agent,
+    #         "What is the difference between a Python list and a tuple?",
+    #         context=student_2,
+    #     )
+
+    # print(result.final_output)
+
     with trace("Agent trigger execution"):
         result = await Runner.run(
             triage_agent,
-            "What is the area of a circle with a radius of 5 cm?",
-        )
-
-    print(result.final_output.answer)
-    print(result.final_output.unit)
-    print(result.final_output.formula)
-
-    with trace("Agent trigger execution"):
-        result = await Runner.run(
-            triage_agent,
-            "What is the difference between a Python list and a tuple?",
-            context=student_2,
+            "Why can't I change a tuple after creating it?",
+            context=student_1,
         )
 
     print(result.final_output)

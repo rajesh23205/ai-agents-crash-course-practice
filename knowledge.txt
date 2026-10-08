@@ -1,0 +1,8 @@
+Python was created by Guido van Rossum.
+Python 3.0 was released in 2008.
+Python uses indentation to define code blocks.
+Python lists are mutable.
+Python tuples are immutable.
+Python uses indentation to define code blocks.
+Indentation is significant: inconsistent indentation can cause errors.
+Use spaces (PEP 8 recommends 4 spaces per level).
