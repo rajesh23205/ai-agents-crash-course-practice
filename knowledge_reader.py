@@ -1,4 +1,5 @@
 import json
+import re
 from math import sqrt
 from pathlib import Path
 
@@ -13,6 +14,61 @@ KNOWLEDGE_FILE = Path("knowledge.txt")
 EMBEDDINGS_FILE = Path("knowledge_embeddings.json")
 SIMILARITY_THRESHOLD = 0.40
 TOP_K = 3
+CHUNK_SIZE = 15
+CHUNK_OVERLAP = 5
+
+
+def create_chunks(text: str) -> list[str]:
+    """Split text into word-limited chunks with sentence-based overlap."""
+
+    # Step 1: Split text into sentences.
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+
+    # Step 2: Split any oversized sentence into smaller pieces.
+    processed_sentences = []
+
+    for sentence in sentences:
+        words = sentence.split()
+
+        if len(words) > CHUNK_SIZE:
+            for i in range(0, len(words), CHUNK_SIZE):
+                piece = " ".join(words[i : i + CHUNK_SIZE])
+                processed_sentences.append(piece)
+        else:
+            processed_sentences.append(sentence)
+
+    # Step 3: Build chunks.
+    chunks = []
+    current_sentences = []
+    current_word_count = 0
+
+    for sentence in processed_sentences:
+        sentence = sentence.strip()
+
+        if not sentence:
+            continue
+
+        sentence_word_count = len(sentence.split())
+
+        # If adding this sentence exceeds the chunk limit,
+        # save the current chunk and prepare overlap.
+        if current_word_count + sentence_word_count > CHUNK_SIZE and current_sentences:
+            chunks.append(" ".join(current_sentences))
+
+            # Remove older sentences while preserving recent context.
+            while current_sentences and current_word_count > CHUNK_OVERLAP:
+                removed_sentence = current_sentences.pop(0)
+                current_word_count -= len(removed_sentence.split())
+
+        # Add the incoming sentence.
+        current_sentences.append(sentence)
+        current_word_count += sentence_word_count
+
+    # Step 4: Save the final chunk.
+    if current_sentences:
+        chunks.append(" ".join(current_sentences))
+
+    return chunks
 
 
 def cosine_similarity(vector_a, vector_b):
@@ -30,7 +86,9 @@ def cosine_similarity(vector_a, vector_b):
 def load_or_create_embeddings():
     # Step 1: Read the current knowledge file.
     with KNOWLEDGE_FILE.open("r", encoding="utf-8") as file:
-        sentences = [line.strip() for line in file if line.strip()]
+        text = file.read()
+
+    chunks = create_chunks(text)
 
     # Step 2: Check whether saved embeddings exist.
     if EMBEDDINGS_FILE.exists():
@@ -38,9 +96,9 @@ def load_or_create_embeddings():
             records = json.load(file)
 
         # Step 3: Compare saved text with current text.
-        stored_sentences = [record["text"] for record in records]
+        stored_chunks = [record["text"] for record in records]
 
-        if stored_sentences == sentences:
+        if stored_chunks == chunks:
             print("Knowledge file unchanged. Reusing stored embeddings...")
             return records
 
@@ -52,19 +110,19 @@ def load_or_create_embeddings():
     # Step 4: Generate embeddings for the current sentences.
     response = client.embeddings.create(
         model="text-embedding-3-small",
-        input=sentences,
+        input=chunks,
     )
 
     records = [
-        {"text": sentence, "embedding": item.embedding}
-        for sentence, item in zip(sentences, response.data)
+        {"text": chunk, "embedding": item.embedding}
+        for chunk, item in zip(chunks, response.data)
     ]
 
     # Step 5: Save the updated embeddings.
     with EMBEDDINGS_FILE.open("w", encoding="utf-8") as file:
         json.dump(records, file)
 
-    print(f"Saved embeddings for {len(records)} knowledge sentences.")
+    print(f"Saved embeddings for {len(records)} knowledge chunks.")
 
     return records
 

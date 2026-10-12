@@ -170,7 +170,7 @@ async def main():
     with trace("Knowledge retrieval question"):
         result = await Runner.run(
             knowledge_tutor_agent,
-            "What does my knowledge file say about Python indentation and code blocks?",
+            "What is Japan's population?",
             context=student_1,
             session=SQLiteSession("knowledge_retrieval_test"),
         )

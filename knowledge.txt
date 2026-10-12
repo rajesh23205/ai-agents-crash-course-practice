@@ -6,3 +6,5 @@ Python tuples are immutable.
 Indentation is significant: inconsistent indentation can cause errors.
 Use spaces (PEP 8 recommends 4 spaces per level).
 The capital of France is Paris.
+Python uses indentation to define code blocks instead of relying on braces. Indentation is significant, and inconsistent indentation can cause errors. Python programmers should maintain consistent indentation throughout their programs. PEP 8 recommends using four spaces per indentation level. Nested code blocks require additional indentation to show which statements belong together. For example, statements inside an if block must be indented relative to the if statement. Mixing tabs and spaces can make code harder to read and may lead to indentation errors. Consistent formatting improves readability and makes Python code easier to maintain. When writing functions, loops, and conditional statements, use indentation carefully to represent the structure of the program.
+Japan's population is not currently documented in this knowledge base.
